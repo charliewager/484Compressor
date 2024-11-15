@@ -3,6 +3,7 @@
 
     This file contains the basic framework code for a JUCE plugin processor.
     LOGAN IS COOL
+    JORDAN IS GAY
   ==============================================================================
 */
 
