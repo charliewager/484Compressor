@@ -220,7 +220,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             // Compression alg:
             //      if i = 0 => set rms = curr_sample * curr_sample
             //      else => set rms = (1 - TAV)*rms + TAV*(curr_sample*curr_sample)
-            if(i=0)
+            if(i == 0)
             {
                 rms = curr_sample * curr_sample;
             }
