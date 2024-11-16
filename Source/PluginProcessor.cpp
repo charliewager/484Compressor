@@ -195,6 +195,8 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         // ..do something to the data...
         // will need to iterate over each sample in the block 
         // Roadmap:
+        //  - Make two identical arrays for the input - copy the input buffer for the channel
+        //      this is so one can remain untouched to use with the mix param
         //  - Apply non_lin processing (do before rms measurement)
         //  - Measure rms of sample
         //  - Calculate static gain
