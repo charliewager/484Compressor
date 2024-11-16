@@ -216,9 +216,24 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             curr_sample = buffer.getSample(channel, i);
             // apply dist/od here
             // 
+            // 
             // Compression alg:
             //      if i = 0 => set rms = curr_sample * curr_sample
             //      else => set rms = (1 - TAV)*rms + TAV*(curr_sample*curr_sample)
+            if(i=0)
+            {
+                rms = curr_sample * curr_sample;
+            }
+            else 
+            {
+                rms = (1 - TAV) * rms + TAV * (curr_sample * curr_sample);
+            }
+
+            //write if statements for G = min([0, CS*(CT-X)]), note that r is compression ration in header file
+
+            
+            
+
         }
 
     }
