@@ -188,6 +188,9 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    //get number of samples
+    auto numSamples = buffer.getNumSamples();
+    float rms = 0;
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto* channelData = buffer.getWritePointer (channel);
@@ -206,6 +209,18 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         //      - this will need to be reset whenerver the audio is stopped
         //  - Apply gain to sample
         //  - Applut makeup gain
+
+        rms = 0;
+        float curr_sample = 0;
+        for (int i = 0; i < numSamples; i++) {
+            curr_sample = buffer.getSample(channel, i);
+            // apply dist/od here
+            // 
+            // Compression alg:
+            //      if i = 0 => set rms = curr_sample * curr_sample
+            //      else => set rms = (1 - TAV)*rms + TAV*(curr_sample*curr_sample)
+        }
+
     }
 }
 

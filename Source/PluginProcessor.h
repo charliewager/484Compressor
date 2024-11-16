@@ -63,7 +63,7 @@ public:
 
 private:
     // create pointers to params in createParameterLayout to optimize and simplify access
-    // these can be accessed with x->get() and can be set with:
+    // these can be accessed with param->get() and can be set with:
     //          x->setValueNotifyingHost(y) for setting value from editor
     //          x->setValue(y) for setting value anywhere else
     juce::AudioParameterFloat* thresh { nullptr };
@@ -78,6 +78,7 @@ private:
 
     // gain reduction for use in algorithm
     float gr_dynamic;
+    float TAV = 0.025;
 
     // maybe add private functions for envolope/level detection (RMS), static gain computing and smoothing to simplify process function
 
