@@ -194,6 +194,8 @@ void _484CompressorAudioProcessorEditor::resized()
     juce::FlexBox non_lin_control_strip;
     // flex for mix knob container
     juce::FlexBox mix_knob_strip;
+    // meter contianer
+    juce::FlexBox meters;
 
     auto bound = getLocalBounds();
     using fi = juce::FlexItem;

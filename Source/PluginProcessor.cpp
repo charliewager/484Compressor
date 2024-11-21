@@ -214,8 +214,6 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         //  - Apply gain to sample
         //  - Applut makeup gain
 
-
-
         //create local parameters needed from header file
         float loc_thresh = thresh->get();
         float loc_r = r->get();
@@ -225,9 +223,9 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         
         //calculate AT and RT (in samples)
         //note that loc_atk is in ms
-        float AT = exp(-1 / (0.001 * samp_rate * loc_atk));
+        float AT = exp(-2.2 / (0.001 * samp_rate * loc_atk));
 
-        float RT = exp(-1 / (0.001 * samp_rate * loc_rels));
+        float RT = exp(-2.2 / (0.001 * samp_rate * loc_rels));
 
         //normal local variables
         rms = 0;
