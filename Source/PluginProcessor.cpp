@@ -133,6 +133,8 @@ void _484CompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
     // clear dynamic gain and maybe even input rms level here
+
+    samp_rate = sampleRate;
 }
 
 void _484CompressorAudioProcessor::releaseResources()
@@ -210,8 +212,33 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         //  - Apply gain to sample
         //  - Applut makeup gain
 
-        rms = 0;
+
+
+        //create local parameters needed from header file
+        float loc_thresh = thresh->get();
+        float loc_r = r->get();
+        float loc_atk = atk->get();
+        float loc_rels = rels->get();
+
+        //calculate AT and RT (in samples)
+        //note that loc_atk is in ms
+        float AT = exp( -1/(0.001 * samp_rate * loc_atk) );
+
+        float RT = exp(-1 / (0.001 * samp_rate * loc_rels) );
+
+        //normal local variables
+        float rms = 0;
         float curr_sample = 0;
+        float G = 0;    //gain computation for scaling factor 
+        float static_g = 0;    //static gain
+        float g = 1;    //gain
+        float coeff = loc_atk; //coefficient used to calculate gain
+        float curr_sample_RMS_dB = 0; 
+
+
+
+        //The following is an adaptation of M-file 4.2 (compexp.m) found in Zolzer 2011 pg 112
+
         for (int i = 0; i < numSamples; i++) {
             curr_sample = buffer.getSample(channel, i);
             // apply dist/od here
@@ -229,9 +256,32 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
                 rms = (1 - TAV) * rms + TAV * (curr_sample * curr_sample);
             }
 
-            //write if statements for G = min([0, CS*(CT-X)]), note that r is compression ration in header file
+            curr_sample_RMS_dB = 10*log10(rms);
 
+            //write if statements for G = min([0, CS*(CT-X)]), (see Zolzer pg 110) note that r is compression ration in header file
+            if (curr_sample_RMS_dB <= loc_thresh) {
+                G = 0; //equivalent to 0 bB
+            }
+            else {
+                G = (1 - (1 / (loc_r)) ) * (loc_thresh - curr_sample_RMS_dB);     //G = CS * (CT - X)]
+            }
+
+            //calculate static gain 
+            static_g = pow(f, (G / 20));   //static_g = 10 ^ (G / 20); 
+
+            //AT/RT block
+            if (static_g < g) {
+                coeff = AT;
+            }
+            else {
+                coeff = RT;
+            }
             
+            //calculate gain g
+            g = (1 - coeff) * (g + (coeff * f));
+
+            //apply gain to sample
+            curr_sample = curr_sample * g;
             
 
         }
