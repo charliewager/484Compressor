@@ -246,12 +246,10 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             // apply dist/od here
             // 
 
-            if(i == 0)
-            {
+            if(i == 0) {
                 rms = curr_sample * curr_sample;
             }
-            else 
-            {
+            else {
                 rms = (1 - TAV) * rms + TAV * (curr_sample * curr_sample);
             }
 
