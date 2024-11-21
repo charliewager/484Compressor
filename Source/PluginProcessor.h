@@ -79,7 +79,7 @@ private:
     // gain reduction for use in algorithm
     float gr_dynamic;
     float TAV = 0.025;
-
+    float samp_rate;
     // maybe add private functions for envolope/level detection (RMS), static gain computing and smoothing to simplify process function
 
     //==============================================================================
