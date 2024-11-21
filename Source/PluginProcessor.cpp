@@ -192,6 +192,8 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     // interleaved by keeping the same state.
     //get number of samples
     auto numSamples = buffer.getNumSamples();
+    float makeupDB = m_gain->get();
+    float makeup = pow(10.0f, (makeupDB/20.0f));
     float rms = 0;
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
@@ -219,23 +221,23 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         float loc_r = r->get();
         float loc_atk = atk->get();
         float loc_rels = rels->get();
-
+        float mix_r = (mix->get()) / 100;
+        
         //calculate AT and RT (in samples)
         //note that loc_atk is in ms
-        float AT = exp( -1/(0.001 * samp_rate * loc_atk) );
+        float AT = exp(-1 / (0.001 * samp_rate * loc_atk));
 
-        float RT = exp(-1 / (0.001 * samp_rate * loc_rels) );
+        float RT = exp(-1 / (0.001 * samp_rate * loc_rels));
 
         //normal local variables
-        float rms = 0;
+        rms = 0;
         float curr_sample = 0;
+        float comp_sample = 0;
         float G = 0;    //gain computation for scaling factor 
         float static_g = 0;    //static gain
-        float g = 1;    //gain
+        float gr = 1;    //gain reduction
         float coeff = loc_atk; //coefficient used to calculate gain
         float curr_sample_RMS_dB = 0; 
-
-
 
         //The following is an adaptation of M-file 4.2 (compexp.m) found in Zolzer 2011 pg 112
 
@@ -243,10 +245,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             curr_sample = buffer.getSample(channel, i);
             // apply dist/od here
             // 
-            // 
-            // Compression alg:
-            //      if i = 0 => set rms = curr_sample * curr_sample
-            //      else => set rms = (1 - TAV)*rms + TAV*(curr_sample*curr_sample)
+
             if(i == 0)
             {
                 rms = curr_sample * curr_sample;
@@ -256,33 +255,34 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
                 rms = (1 - TAV) * rms + TAV * (curr_sample * curr_sample);
             }
 
-            curr_sample_RMS_dB = 10*log10(rms);
+            curr_sample_RMS_dB = 10.0f*log10(rms); // change to dB
 
             //write if statements for G = min([0, CS*(CT-X)]), (see Zolzer pg 110) note that r is compression ration in header file
             if (curr_sample_RMS_dB <= loc_thresh) {
-                G = 0; //equivalent to 0 bB
+                G = 0;
             }
             else {
                 G = (1 - (1 / (loc_r)) ) * (loc_thresh - curr_sample_RMS_dB);     //G = CS * (CT - X)]
             }
 
             //calculate static gain 
-            static_g = pow(f, (G / 20));   //static_g = 10 ^ (G / 20); 
+            static_g = pow(10.0f, (G / 20.0f));   //static_g = 10 ^ (G / 20); 
 
             //AT/RT block
-            if (static_g < g) {
+            if (static_g <= gr) {
                 coeff = AT;
             }
             else {
                 coeff = RT;
             }
             
-            //calculate gain g
-            g = (1 - coeff) * (g + (coeff * f));
+            //calculate gain 
+            gr = (coeff * gr) + ((1-coeff) * gr);
 
             //apply gain to sample
-            curr_sample = curr_sample * g;
-            
+            comp_sample = makeup * (curr_sample * gr);
+            // mix compressed sample back into uncompresssed sample and set sample in buffer
+            buffer.setSample(channel, i, ((mix_r * comp_sample) + ((1-mix_r) * curr_sample)));
 
         }
 
