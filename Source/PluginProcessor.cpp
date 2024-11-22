@@ -223,10 +223,8 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         
         //calculate AT and RT (in samples)
         //note that loc_atk is in ms
-        float AT = exp(-2.2 / (0.001 * samp_rate * loc_atk));
-
-        float RT = exp(-2.2 / (0.001 * samp_rate * loc_rels));
-
+        double AT = exp(-2.2 / (0.001 * samp_rate * loc_atk));
+        double RT = exp(-2.2 / (0.001 * samp_rate * loc_rels));
         //normal local variables
         rms = 0;
         float curr_sample = 0;
@@ -234,7 +232,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         float G = 0;    //gain computation for scaling factor 
         float static_g = 0;    //static gain
         float gr = 1;    //gain reduction
-        float coeff = loc_atk; //coefficient used to calculate gain
+        double coeff = AT; //coefficient used to calculate gain
         float curr_sample_RMS_dB = 0; 
 
         //The following is an adaptation of M-file 4.2 (compexp.m) found in Zolzer 2011 pg 112
@@ -248,7 +246,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
                 rms = curr_sample * curr_sample;
             }
             else {
-                rms = (1 - TAV) * rms + TAV * (curr_sample * curr_sample);
+                rms = ((1 - TAV) * rms) + (TAV * (curr_sample * curr_sample));
             }
 
             curr_sample_RMS_dB = 10.0f*log10(rms); // change to dB
@@ -273,17 +271,17 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             }
             
             //calculate gain 
-            gr = (coeff * gr) + ((1-coeff) * gr);
+            gr = (coeff * gr) + ((1-coeff) * static_g);
 
             //apply gain to sample
             comp_sample = makeup * (curr_sample * gr);
             // mix compressed sample back into uncompresssed sample and set sample in buffer
-            buffer.setSample(channel, i, ((mix_r * comp_sample) + ((1-mix_r) * curr_sample)));
+            buffer.setSample(channel, i, comp_sample);
 
         }
 
     }
-}
+} 
 
 //==============================================================================
 bool _484CompressorAudioProcessor::hasEditor() const
