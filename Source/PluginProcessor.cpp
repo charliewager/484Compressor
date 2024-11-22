@@ -272,7 +272,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             
             //calculate gain 
             gr = (coeff * gr) + ((1-coeff) * static_g);
-
+            
             //apply gain to sample
             comp_sample = makeup * (curr_sample * gr);
             // mix compressed sample back into uncompresssed sample and set sample in buffer
