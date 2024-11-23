@@ -11,7 +11,7 @@
 
 //==============================================================================
 _484CompressorAudioProcessorEditor::_484CompressorAudioProcessorEditor (_484CompressorAudioProcessor& p)
-    : AudioProcessorEditor (&p), audioProcessor (p)
+    : AudioProcessorEditor(&p), audioProcessor(p), gr_meter([&]() { return audioProcessor.getGainReduction(); })
 {
     // configure sliders
     thresh_knob.setLookAndFeel(&m_3dKnobLook);
@@ -163,6 +163,7 @@ _484CompressorAudioProcessorEditor::_484CompressorAudioProcessorEditor (_484Comp
     drive_label.attachToComponent(&drive_knob, false);
     addAndMakeVisible(drive_label);
 
+    addAndMakeVisible(gr_meter);
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (1600, 700);
@@ -233,16 +234,19 @@ void _484CompressorAudioProcessorEditor::resized()
     mix_knob_strip.justifyContent = juce::FlexBox::JustifyContent::center;
     mix_knob_strip.alignContent = juce::FlexBox::AlignContent::center;
 
-    mix_knob_strip.items = { fi::FlexItem(mix_knob).withWidth(bound.getWidth() * 0.175).withHeight(bound.getHeight() * 0.35) };
+    mix_knob_strip.items = { fi::FlexItem(mix_knob).withWidth(bound.getWidth() * 0.150).withHeight(bound.getHeight() * 0.35) };
 
     //make overall layout
     overall.flexWrap = juce::FlexBox::Wrap::noWrap;
     overall.justifyContent = juce::FlexBox::JustifyContent::spaceAround;
     overall.alignContent = juce::FlexBox::AlignContent::spaceAround;
 
+    meters.items = { fi::FlexItem(gr_meter).withWidth(bound.getWidth() * 0.025).withHeight(bound.getHeight() * 0.9) };
+
     overall.items = { fi::FlexItem(non_lin_control_strip).withFlex(0.175f).withMargin(juce::FlexItem::Margin(0.0, 0.0, 0.0, 50.0)),
                       fi::FlexItem(comp_knob_grid).withFlex(0.65f).withMargin(juce::FlexItem::Margin(0.0, 15.0, 0.0, 15.0)), 
-                      fi::FlexItem(mix_knob_strip).withFlex(0.175f).withMargin(juce::FlexItem::Margin(125.0, 50.0, 125.0, 0.0))
+                      fi::FlexItem(meters).withFlex(0.025).withMargin(juce::FlexItem::Margin(50.0, 0.0, 50.0, 0.0)),
+                      fi::FlexItem(mix_knob_strip).withFlex(0.150f).withMargin(juce::FlexItem::Margin(125.0, 50.0, 125.0, 25.0))
                     };
     
     overall.performLayout(getLocalBounds());

@@ -5,6 +5,10 @@
               pluginManufacturer="Charlie Wager">
   <MAINGROUP id="h92H9v" name="484Compressor">
     <GROUP id="{AF2430AB-78EE-F823-E27E-62D95012B4C3}" name="Source">
+      <GROUP id="{3FBA6963-9563-27D0-DA81-785ED73B07EC}" name="GUI">
+        <FILE id="JBpyLx" name="bulb.h" compile="0" resource="0" file="Source/GUI/bulb.h"/>
+        <FILE id="GbPcHB" name="meter.h" compile="0" resource="0" file="Source/GUI/meter.h"/>
+      </GROUP>
       <GROUP id="{2591BFC0-ACF7-3565-D8F9-1E626A38CEEA}" name="LNF">
         <FILE id="TgbsCl" name="custom_3d_knob_lnf.cpp" compile="1" resource="0"
               file="Source/LNF/custom_3d_knob_lnf.cpp"/>

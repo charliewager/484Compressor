@@ -135,6 +135,7 @@ void _484CompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
     // clear dynamic gain and maybe even input rms level here
 
     samp_rate = sampleRate;
+    gr = 1;
 }
 
 void _484CompressorAudioProcessor::releaseResources()
@@ -197,6 +198,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     float rms = 0;
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
+        // I think that there is a method in JUCE That can help us process samples properly
         auto* channelData = buffer.getWritePointer (channel);
 
         // ..do something to the data...
@@ -226,18 +228,19 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         double AT = exp(-2.2 / (0.001 * samp_rate * loc_atk));
         double RT = exp(-2.2 / (0.001 * samp_rate * loc_rels));
         //normal local variables
-        rms = 0;
+        rms = 0; // might want to not reset this every time 
         float curr_sample = 0;
         float comp_sample = 0;
         float G = 0;    //gain computation for scaling factor 
         float static_g = 0;    //static gain
-        float gr = 1;    //gain reduction
-        double coeff = AT; //coefficient used to calculate gain
+        //float gr = 1;    //gain reduction -> this should be initialized and reset only in prepare to play
         float curr_sample_RMS_dB = 0; 
 
         //The following is an adaptation of M-file 4.2 (compexp.m) found in Zolzer 2011 pg 112
 
         for (int i = 0; i < numSamples; i++) {
+            // I think our method of accessing the sample and setting it are wrong
+            // this is likely the root cause of our issue, will find better way
             curr_sample = buffer.getSample(channel, i);
             // apply dist/od here
             // 
@@ -262,16 +265,13 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             //calculate static gain 
             static_g = pow(10.0f, (G / 20.0f));   //static_g = 10 ^ (G / 20); 
 
-            //AT/RT block
+            // Calculate gain reduction
             if (static_g <= gr) {
-                coeff = AT;
+                gr = (AT * gr) + ((1 - AT) * static_g);
             }
             else {
-                coeff = RT;
+                gr = (RT * gr) + ((1 - RT) * static_g);
             }
-            
-            //calculate gain 
-            gr = (coeff * gr) + ((1-coeff) * static_g);
             
             //apply gain to sample
             comp_sample = makeup * (curr_sample * gr);
@@ -340,6 +340,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout _484CompressorAudioProcessor
     param_layout.add(std::make_unique<AudioParameterFloat>("drive", "Drive", NormalisableRange<float>(0.0f, 24.0f, 0.25f, 1.0f), 0));
 
     return param_layout;
+}
+
+float _484CompressorAudioProcessor::getGainReduction() {
+    return juce::Decibels::gainToDecibels(gr);
 }
 
 //==============================================================================

@@ -60,6 +60,7 @@ public:
 
     // gain reduction for use with meter -> maybe set every 25 samples?
     juce::Atomic<float> gain_reduction;
+    float getGainReduction();
 
 private:
     // create pointers to params in createParameterLayout to optimize and simplify access
@@ -77,7 +78,7 @@ private:
     juce::AudioParameterChoice* nl_choice{ nullptr };
 
     // gain reduction for use in algorithm
-    std::array<float, 2> gainReduction;
+    float gr;
     float TAV = 0.075;
     float samp_rate;
     // maybe add private functions for envolope/level detection (RMS), static gain computing and smoothing to simplify process function

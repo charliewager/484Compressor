@@ -11,6 +11,7 @@
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
 #include "./LNF/custom_3d_knob_lnf.h"
+#include "GUI/meter.h"
 
 //==============================================================================
 /**
@@ -68,6 +69,7 @@ private:
     //  - code from git repo with meter (open source)
     //  - create flex box item for meter
     //  - add timer and callback function to update gain reduction periodically
+    meter gr_meter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (_484CompressorAudioProcessorEditor)
 };
