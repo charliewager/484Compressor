@@ -244,6 +244,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             curr_sample = buffer.getSample(channel, i);
             // apply dist/od here
             // 
+            curr_sample = applyOD_or_DIST(curr_sample);
 
             if(i == 0) {
                 rms = curr_sample * curr_sample;
@@ -276,6 +277,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             //apply gain to sample
             comp_sample = makeup * (curr_sample * gr);
             // mix compressed sample back into uncompresssed sample and set sample in buffer
+            // need to add mix back in param back in
             buffer.setSample(channel, i, comp_sample);
 
         }
@@ -344,6 +346,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout _484CompressorAudioProcessor
 
 float _484CompressorAudioProcessor::getGainReduction() {
     return juce::Decibels::gainToDecibels(gr);
+}
+
+float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
+{
+    //put od/dist alg here
+    return in_level;
 }
 
 //==============================================================================

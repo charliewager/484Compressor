@@ -61,6 +61,7 @@ public:
     // gain reduction for use with meter -> maybe set every 25 samples?
     juce::Atomic<float> gain_reduction;
     float getGainReduction();
+    float applyOD_or_DIST(float in_level);
 
 private:
     // create pointers to params in createParameterLayout to optimize and simplify access

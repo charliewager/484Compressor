@@ -33,56 +33,57 @@ public:
 	{	//blub at 0 is bottom bulb => bulb at max is top bulb
 		auto value = valueSupplier(); //gain reduction in decibles (will be negative)
 		for (int i = (totalNumberOfBulbs - 1); i >= 0; i--) {
+			bulbs[i]->setState(true);
+			//doesnt work
+			//if ((i == 0) && (value <= -40))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 
-			if ((i == 0) && (value <= -40))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
+			//if ((i == 1) && (value <= -30))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 
-			if ((i == 1) && (value <= -30))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
+			//if ((i == 2) && (value <= -20))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 
-			if ((i == 2) && (value <= -20))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
+			//if ((i == 3) && (value <= -10))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 
-			if ((i == 3) && (value <= -10))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
+			//if ((i == 4) && (value <= -7.5))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 
-			if ((i == 4) && (value <= -7.5))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
+			//if ((i == 5) && (value <= -5))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 
-			if ((i == 5) && (value <= -5))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
+			//if ((i == 6) && (value <= -4))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 
-			if ((i == 6) && (value <= -4))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
+			//if ((i == 7) && (value <= -3))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 
-			if ((i == 7) && (value <= -3))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
+			//if ((i == 8) && (value <= -2))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 
-			if ((i == 8) && (value <= -2))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
-
-			if ((i == 9) && (value <= -1))
-				bulbs[i]->setState(true);
-			else
-				bulbs[i]->setState(false);
+			//if ((i == 9) && (value <= -1))
+			//	bulbs[i]->setState(true);
+			//else
+			//	bulbs[i]->setState(false);
 		}
 		
 	}
@@ -90,7 +91,7 @@ public:
 	void resized() override
 	{
 		const auto bounds = getLocalBounds().toFloat();
-		juce::ColourGradient gradient{ juce::Colours::green, bounds.getBottomLeft(), juce::Colours::red, bounds.getTopLeft(), false };
+		juce::ColourGradient gradient{ juce::Colours::red, bounds.getBottomLeft(), juce::Colours::green, bounds.getTopLeft(), false };
 		gradient.addColour(0.5, juce::Colours::yellow);
 
 		const auto bulbHeight = getLocalBounds().getHeight() / totalNumberOfBulbs;
