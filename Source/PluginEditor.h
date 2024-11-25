@@ -64,11 +64,6 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::ComboBoxAttachment> nl_choiceAttachment;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> driveAttachment;
 
-    //for meter:
-    //  - need to add public gain reduction var (in dB)
-    //  - code from git repo with meter (open source)
-    //  - create flex box item for meter
-    //  - add timer and callback function to update gain reduction periodically
     meter gr_meter;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (_484CompressorAudioProcessorEditor)

@@ -32,59 +32,109 @@ public:
 	void paint(juce::Graphics & g) override
 	{	//blub at 0 is bottom bulb => bulb at max is top bulb
 		auto value = valueSupplier(); //gain reduction in decibles (will be negative)
-		for (int i = (totalNumberOfBulbs - 1); i >= 0; i--) {
+		/*for (int i = (totalNumberOfBulbs - 1); i >= 0; i--) {
 			bulbs[i]->setState(true);
 			//doesnt work
-			//if ((i == 0) && (value <= -40))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
+			if ((i == 0) && (value <= -40))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
 
-			//if ((i == 1) && (value <= -30))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
+			if ((i == 1) && (value <= -30))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
 
-			//if ((i == 2) && (value <= -20))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
+			if ((i == 2) && (value <= -20))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
 
-			//if ((i == 3) && (value <= -10))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
+			if ((i == 3) && (value <= -10))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
 
-			//if ((i == 4) && (value <= -7.5))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
+			if ((i == 4) && (value <= -7.5))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
 
-			//if ((i == 5) && (value <= -5))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
+			if ((i == 5) && (value <= -5))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
 
-			//if ((i == 6) && (value <= -4))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
+			if ((i == 6) && (value <= -4))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
 
-			//if ((i == 7) && (value <= -3))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
+			if ((i == 7) && (value <= -3))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
 
-			//if ((i == 8) && (value <= -2))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
+			if ((i == 8) && (value <= -2))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
 
-			//if ((i == 9) && (value <= -1))
-			//	bulbs[i]->setState(true);
-			//else
-			//	bulbs[i]->setState(false);
-		}
+			if ((i == 9) && (value <= -1))
+				bulbs[i]->setState(true);
+			else
+				bulbs[i]->setState(false);
+		}*/
+
+		if ((value <= -40))
+			bulbs[0]->setState(true);
+		else
+			bulbs[0]->setState(false);
+
+		if ((value <= -30))
+			bulbs[1]->setState(true);
+		else
+			bulbs[1]->setState(false);
+
+		if ((value <= -20))
+			bulbs[2]->setState(true);
+		else
+			bulbs[2]->setState(false);
+
+		if ((value <= -10))
+			bulbs[3]->setState(true);
+		else
+			bulbs[3]->setState(false);
+
+		if ((value <= -7.5))
+			bulbs[4]->setState(true);
+		else
+			bulbs[4]->setState(false);
+
+		if ((value <= -5))
+			bulbs[5]->setState(true);
+		else
+			bulbs[5]->setState(false);
+
+		if ((value <= -4))
+			bulbs[6]->setState(true);
+		else
+			bulbs[6]->setState(false);
+
+		if ((value <= -3))
+			bulbs[7]->setState(true);
+		else
+			bulbs[7]->setState(false);
+
+		if ((value <= -2))
+			bulbs[8]->setState(true);
+		else
+			bulbs[8]->setState(false);
+
+		if ((value <= -1))
+			bulbs[9]->setState(true);
+		else
+			bulbs[9]->setState(false);
 		
 	}
 

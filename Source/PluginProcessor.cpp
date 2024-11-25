@@ -279,12 +279,12 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
                 }
                 else if ((2 * (curr_sample_RMS_dB - loc_thresh)) > ((-1) * loc_k_width)) {
 
-                    G = curr_sample_RMS_dB + (((1 / loc_r) - 1) * (curr_sample_RMS_dB - loc_thresh + (loc_k_width / 2)) / (2 * loc_k_width));
+                    G = curr_sample_RMS_dB + (1 - (1 / (loc_r))) * (curr_sample_RMS_dB - loc_thresh + (loc_k_width / 2)) / (2 * loc_k_width);
 
                 }
                 else {
 
-                    G = loc_thresh + ((curr_sample_RMS_dB - loc_thresh) / loc_thresh);
+                    G = loc_thresh + ((curr_sample_RMS_dB - loc_thresh) / loc_r);
 
                 }
 
@@ -394,9 +394,8 @@ float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
     //this distortion code is adapted from Reiss pg 183
 
     //Apply distortion based on type
-
+    in_level = in_level * input_gain;
     if (d_type == "Distortion") {
-        in_level = in_level * input_gain;
 
         //simple hard clipping
         if (in_level > 1) {
@@ -417,7 +416,6 @@ float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
         return d_out;
 
     } else if(d_type == "Hybrid") {
-        in_level = in_level * input_gain;
 
         //simple hard clipping
         if (in_level > 1) {
