@@ -253,20 +253,20 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             }
             else {
                 /*Soft Knee Algorithm */
-
+                float abs_val = fabsf(curr_sample_RMS_dB - loc_thresh);
                 if ((2 * (curr_sample_RMS_dB - loc_thresh)) < ((-1) * loc_k_width)) {
 
                     G = 0;
 
                 }
-                else if ((2 * (curr_sample_RMS_dB - loc_thresh)) > ((-1) * loc_k_width)) {
+                else if ((2 * abs_val) <= (loc_k_width)) {
 
                     G = curr_sample_RMS_dB + (1 - (1 / (loc_r))) * (curr_sample_RMS_dB - loc_thresh + (loc_k_width / 2)) / (2 * loc_k_width);
 
                 }
-                else {
+                else if ((2 * (curr_sample_RMS_dB - loc_thresh)) > loc_k_width){
 
-                    G = loc_thresh + ((curr_sample_RMS_dB - loc_thresh) / loc_r);
+                    G = (1 - (1 / (loc_r))) * (loc_thresh - curr_sample_RMS_dB);
 
                 }
 
