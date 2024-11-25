@@ -201,21 +201,6 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         // I think that there is a method in JUCE That can help us process samples properly
         auto* channelData = buffer.getWritePointer (channel);
 
-        // ..do something to the data...
-        // will need to iterate over each sample in the block 
-        // Roadmap:
-        //  - Make two identical arrays for the input - copy the input buffer for the channel
-        //      this is so one can remain untouched to use with the mix param
-        //  - Apply non_lin processing (do before rms measurement)
-        //  - Measure rms of sample
-        //  - Calculate static gain
-        //  - Smooth static gain by applying attack and release time logic (this may
-        //      need to be applied across multiple processBlock invocations - maybe
-        //      keep a record of applied (dynamic) gain potentially as a public var
-        //      - this will need to be reset whenerver the audio is stopped
-        //  - Apply gain to sample
-        //  - Applut makeup gain
-
         //create local parameters needed from header file
         float loc_thresh = thresh->get();
         float loc_r = r->get();
@@ -231,21 +216,18 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         //normal local variables
         rms = 0; // might want to not reset this every time 
         float curr_sample = 0;
+        float orig = 0;
         float comp_sample = 0;
         float G = 0;    //gain computation for scaling factor 
         float static_g = 0;    //static gain
-        //float gr = 1;    //gain reduction -> this should be initialized and reset only in prepare to play
         float curr_sample_RMS_dB = 0; 
 
-        //The following is an adaptation of M-file 4.2 (compexp.m) found in Zolzer 2011 pg 112
-
         for (int i = 0; i < numSamples; i++) {
-            // I think our method of accessing the sample and setting it are wrong
-            // this is likely the root cause of our issue, will find better way
-            curr_sample = buffer.getSample(channel, i);
+
+            orig = buffer.getSample(channel, i);
             // apply dist/od here
             // 
-            curr_sample = applyOD_or_DIST(curr_sample);
+            curr_sample = applyOD_or_DIST(orig);
 
             if(i == 0) {
                 rms = curr_sample * curr_sample;
@@ -305,8 +287,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
             //apply gain to sample
             comp_sample = makeup * (curr_sample * gr);
             // mix compressed sample back into uncompresssed sample and set sample in buffer
-            // need to add mix back in param back in
-            buffer.setSample(channel, i, comp_sample);
+            buffer.setSample(channel, i, ((mix_r * comp_sample) + ((1 - mix_r) * orig)));
 
         }
 
