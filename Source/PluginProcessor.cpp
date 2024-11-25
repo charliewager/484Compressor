@@ -339,7 +339,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout _484CompressorAudioProcessor
     // non-linear effect selection param
     param_layout.add(std::make_unique<AudioParameterChoice>("non_lin_choice", "Dist Type Choice", StringArray("Distortion", "Overdrive"), 0));
     // non-linear effect amount (or gain) in dB
-    param_layout.add(std::make_unique<AudioParameterFloat>("drive", "Drive", NormalisableRange<float>(0.0f, 24.0f, 0.25f, 1.0f), 0));
+    param_layout.add(std::make_unique<AudioParameterFloat>("drive", "Drive", NormalisableRange<float>(0.0f, 36.0f, 0.25f, 1.0f), 0));
 
     return param_layout;
 }
@@ -371,7 +371,7 @@ float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
         in_level = in_level * input_gain;
 
         //simple hard clipping
-        if (in_level < 1) {
+        if (in_level > 1) {
 
             d_out = 1;
 
@@ -401,7 +401,7 @@ float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
             d_out = -(3.0f - (2.0f - 3.0f * in_level) * (2.0f - 3.0f * in_level)) / 3.0f;
         }
         else {
-            d_out - 2.0f * in_level;
+            d_out = 2.0f * in_level;
         }
 
 
