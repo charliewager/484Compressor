@@ -111,7 +111,10 @@ _484CompressorAudioProcessorEditor::_484CompressorAudioProcessorEditor (_484Comp
     );
 
     nl_choice.addItem("Distortion", 1);
-    nl_choice.addItem("Overdrive", 2);
+    nl_choice.addItem("Hybrid", 2);
+    nl_choice.addItem("Overdrive", 3);
+    nl_choice.addItem("Full Wave Rectifier", 4);
+    nl_choice.addItem("Half Wave Rectifier", 5);
     nl_choice.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(nl_choice);
 

@@ -222,6 +222,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         float loc_atk = atk->get();
         float loc_rels = rels->get();
         float mix_r = (mix->get()) / 100;
+        float loc_k_width = k_width->get();
         
         //calculate AT and RT (in samples)
         //note that loc_atk is in ms
@@ -255,12 +256,39 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
 
             curr_sample_RMS_dB = 10.0f*log10(rms); // change to dB
 
-            //write if statements for G = min([0, CS*(CT-X)]), (see Zolzer pg 110) note that r is compression ration in header file
-            if (curr_sample_RMS_dB <= loc_thresh) {
-                G = 0;
+            if (loc_k_width == 0) {
+
+                /* Hard Knee algortihm*/
+
+                //write if statements for G = min([0, CS*(CT-X)]), (see Zolzer pg 110) note that r is compression ration in header file
+                if (curr_sample_RMS_dB <= loc_thresh) {
+                    G = 0;
+                }
+                else {
+                    G = (1 - (1 / (loc_r))) * (loc_thresh - curr_sample_RMS_dB);     //G = CS * (CT - X)]
+                }
+
             }
             else {
-                G = (1 - (1 / (loc_r)) ) * (loc_thresh - curr_sample_RMS_dB);     //G = CS * (CT - X)]
+                /*Soft Knee Algorithm */
+
+                if ((2 * (curr_sample_RMS_dB - loc_thresh)) < ((-1) * loc_k_width)) {
+
+                    G = 0;
+
+                }
+                else if ((2 * (curr_sample_RMS_dB - loc_thresh)) > ((-1) * loc_k_width)) {
+
+                    G = curr_sample_RMS_dB + (1 - (1 / (loc_r))) * (curr_sample_RMS_dB - loc_thresh + (loc_k_width / 2)) / (2 * loc_k_width);
+
+                }
+                else {
+
+                    G = loc_thresh + ((curr_sample_RMS_dB - loc_thresh) / loc_r);
+
+                }
+
+
             }
 
             //calculate static gain 
@@ -337,9 +365,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout _484CompressorAudioProcessor
     // mix param in %
     param_layout.add(std::make_unique<AudioParameterFloat>("mix", "Mix", NormalisableRange<float>(0.0f, 100.0f, 0.5f, 1.0f), 100));
     // non-linear effect selection param
-    param_layout.add(std::make_unique<AudioParameterChoice>("non_lin_choice", "Dist Type Choice", StringArray("Distortion", "Overdrive"), 0));
+    param_layout.add(std::make_unique<AudioParameterChoice>("non_lin_choice", "Dist Type Choice", StringArray("Distortion", "Hybrid", "Overdrive", "Full Wave Rectifier", "Half Wave Rectifier"), 0));
     // non-linear effect amount (or gain) in dB
-    param_layout.add(std::make_unique<AudioParameterFloat>("drive", "Drive", NormalisableRange<float>(0.0f, 24.0f, 0.25f, 1.0f), 0));
+    param_layout.add(std::make_unique<AudioParameterFloat>("drive", "Drive", NormalisableRange<float>(0.0f, 36.0f, 0.25f, 1.0f), 0));
 
     return param_layout;
 }
@@ -351,7 +379,97 @@ float _484CompressorAudioProcessor::getGainReduction() {
 float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
 {
     //put od/dist alg here
-    return in_level;
+
+    //distortion variables
+    float input_gain_dB = drive->get();
+    float input_gain = pow(10.0f, (input_gain_dB / 20.0f));
+    auto d_type = nl_choice->getCurrentChoiceName(); //distortion type
+
+    float d_out; //distortion out
+
+    //thresholds for Overdrive:
+    float o_thresh1 = 1.0f / 3.0f;
+    float o_thresh2 = 2.0f / 3.0f;
+
+    //this distortion code is adapted from Reiss pg 183
+
+    //Apply distortion based on type
+    in_level = in_level * input_gain;
+    if (d_type == "Distortion") {
+
+        //simple hard clipping
+        if (in_level > 1) {
+
+            d_out = 1;
+
+        } else if (in_level < -1) {
+
+            d_out = -1;
+
+        } else {
+
+            d_out = in_level;
+
+        }
+
+
+        return d_out;
+
+    } else if(d_type == "Hybrid") {
+
+        //simple hard clipping
+        if (in_level > 1) {
+
+            d_out = 1;
+
+        }
+        else if (in_level < -1) {
+
+            d_out = -1;
+
+        }
+        else {
+
+            d_out = in_level;
+
+        }
+
+        return d_out * in_level;
+
+    }
+    else if (d_type == "Overdrive") {
+
+        //should emulate the clipping diodes of a common overdrive pedal
+        
+        if(in_level > 0){
+            d_out = 1.0f - expf((-1) * in_level);
+
+        }
+        else {
+            d_out = -1.0f + expf(in_level);
+        }
+
+    }else if(d_type == "Full Wave Recifiter"){ 
+        
+        d_out = fabsf(in_level);
+
+    }else{
+
+        /*Half Wave Rectifier*/
+
+        if (in_level > 0) {
+
+            d_out = in_level;
+
+        }
+        else {
+
+            d_out = 0;
+
+        }
+
+    }
+
 }
 
 //==============================================================================
