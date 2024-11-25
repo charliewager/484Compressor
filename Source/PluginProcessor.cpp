@@ -351,7 +351,65 @@ float _484CompressorAudioProcessor::getGainReduction() {
 float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
 {
     //put od/dist alg here
-    return in_level;
+
+    //distortion variables
+    float input_gain_dB = drive->get();
+    float input_gain = pow(10.0f, (input_gain_dB / 20.0f));
+    auto d_type = nl_choice->getCurrentChoiceName(); //distortion type
+
+    float d_out; //distortion out
+
+    //thresholds for Overdrive:
+    float o_thresh1 = 1.0f / 3.0f;
+    float o_thresh2 = 2.0f / 3.0f;
+
+    //this distortion code is adapted from Reiss pg 183
+
+    //Apply distortion based on type
+    if (d_type == "Distortion") {
+
+        in_level = in_level * input_gain;
+
+        //simple hard clipping
+        if (in_level < 1) {
+
+            d_out = 1;
+
+        }
+        else if (in_level < -1) {
+
+            d_out = -1;
+
+        }
+        else {
+
+            d_out = in_level;
+
+        }
+
+
+
+    }else if(d_type == "Overdrive") {
+
+        if (in_level > o_thresh2) {
+            d_out = 1.0f;
+        }else if(in_level > o_thresh1) {
+            d_out = (3.0f - (2.0f - 3.0f * in_level) * (2.0f - 3.0f * in_level)) / 3.0f;
+        }else if(in_level < -o_thresh2) {
+            d_out = -1.0f;
+        }else if(in_level < -o_thresh1) {
+            d_out = -(3.0f - (2.0f - 3.0f * in_level) * (2.0f - 3.0f * in_level)) / 3.0f;
+        }
+        else {
+            d_out - 2.0f * in_level;
+        }
+
+
+    }
+
+    //apply distorion to curr_sample
+
+    return d_out;
 }
 
 //==============================================================================
