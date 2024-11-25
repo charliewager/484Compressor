@@ -337,7 +337,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout _484CompressorAudioProcessor
     // mix param in %
     param_layout.add(std::make_unique<AudioParameterFloat>("mix", "Mix", NormalisableRange<float>(0.0f, 100.0f, 0.5f, 1.0f), 100));
     // non-linear effect selection param
-    param_layout.add(std::make_unique<AudioParameterChoice>("non_lin_choice", "Dist Type Choice", StringArray("Distortion", "Overdrive"), 0));
+    param_layout.add(std::make_unique<AudioParameterChoice>("non_lin_choice", "Dist Type Choice", StringArray("Distortion", "Hybrid"), 0));
     // non-linear effect amount (or gain) in dB
     param_layout.add(std::make_unique<AudioParameterFloat>("drive", "Drive", NormalisableRange<float>(0.0f, 36.0f, 0.25f, 1.0f), 0));
 
@@ -366,8 +366,29 @@ float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
     //this distortion code is adapted from Reiss pg 183
 
     //Apply distortion based on type
-    if (d_type == "Distortion") {
 
+    if (d_type == "Distortion") {
+        in_level = in_level * input_gain;
+
+        //simple hard clipping
+        if (in_level > 1) {
+
+            d_out = 1;
+
+        } else if (in_level < -1) {
+
+            d_out = -1;
+
+        } else {
+
+            d_out = in_level;
+
+        }
+
+
+        return d_out;
+
+    } else if(d_type == "Hybrid") {
         in_level = in_level * input_gain;
 
         //simple hard clipping
@@ -387,29 +408,10 @@ float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
 
         }
 
-
-
-    }else if(d_type == "Overdrive") {
-
-        if (in_level > o_thresh2) {
-            d_out = 1.0f;
-        }else if(in_level > o_thresh1) {
-            d_out = (3.0f - (2.0f - 3.0f * in_level) * (2.0f - 3.0f * in_level)) / 3.0f;
-        }else if(in_level < -o_thresh2) {
-            d_out = -1.0f;
-        }else if(in_level < -o_thresh1) {
-            d_out = -(3.0f - (2.0f - 3.0f * in_level) * (2.0f - 3.0f * in_level)) / 3.0f;
-        }
-        else {
-            d_out = 2.0f * in_level;
-        }
-
+        return d_out * in_level;
 
     }
 
-    //apply distorion to curr_sample
-
-    return d_out;
 }
 
 //==============================================================================
