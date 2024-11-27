@@ -221,7 +221,7 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
         float G = 0;    //gain computation for scaling factor 
         float static_g = 0;    //static gain
         float curr_sample_RMS_dB = 0; 
-
+        //maybe switch order of loops and only use the max rms level from both channel as gain reduction source 
         for (int i = 0; i < numSamples; i++) {
 
             orig = buffer.getSample(channel, i);
@@ -333,9 +333,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout _484CompressorAudioProcessor
     using namespace juce;
     // threshold parameter in units of dB
     param_layout.add(std::make_unique<AudioParameterFloat>("thresh", "Threshold", NormalisableRange<float>(-60.0f, 12.0f, 0.5f, 1.0f), 0));
-    // attack parameter in units of ms
+    // attack parameter in units of ms - lower top range to be maybe 200
     param_layout.add(std::make_unique<AudioParameterFloat>("atk", "Attack", NormalisableRange<float>(0.50f, 500.0f, 0.05f, 1.0f), 5));
-    // release parameter in units of ms
+    // release parameter in units of ms bring up bottom of range to 10 ms
     param_layout.add(std::make_unique<AudioParameterFloat>("rels", "Release", NormalisableRange<float>(1.0f, 1000.0f, 0.05f, 1.0f), 25));
     // x:1 ratio parameter
     param_layout.add(std::make_unique<AudioParameterFloat>("r", "Ratio", NormalisableRange<float>(1.0f, 20.0f, 0.5f, 1.0f), 2));
@@ -430,9 +430,12 @@ float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
             d_out = -1.0f + expf(in_level);
         }
 
+        return d_out;
+
     }else if(d_type == "Full Wave Recifiter"){ 
         
         d_out = fabsf(in_level);
+        return d_out;
 
     }else{
 
@@ -449,6 +452,7 @@ float _484CompressorAudioProcessor::applyOD_or_DIST(float in_level)
 
         }
 
+        return d_out;
     }
 
 }
