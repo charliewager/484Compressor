@@ -136,6 +136,8 @@ void _484CompressorAudioProcessor::prepareToPlay (double sampleRate, int samples
 
     samp_rate = sampleRate;
     gr = 1;
+    rms_0 = 0;
+    rms_1 = 0;
 }
 
 void _484CompressorAudioProcessor::releaseResources()
@@ -191,106 +193,106 @@ void _484CompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffe
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    // 
     //get number of samples
     auto numSamples = buffer.getNumSamples();
+    float sample_0 = 0;
+    float sample_0p = 0;
+    float sample_1 = 0;
+    float sample_1p = 0;
+    rms_0 = 0;
+    rms_1 = 0;
+    float curr_sample_RMS_dB = 0;
+    float G = 0;    //gain computation for scaling factor 
+    float static_g = 0;    //static gain
+
     float makeupDB = m_gain->get();
     float makeup = pow(10.0f, (makeupDB/20.0f));
-    float rms = 0;
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        // I think that there is a method in JUCE That can help us process samples properly
-        auto* channelData = buffer.getWritePointer (channel);
+    float loc_thresh = thresh->get();
+    float loc_r = r->get();
+    float loc_atk = atk->get();
+    float loc_rels = rels->get();
+    float mix_r = (mix->get()) / 100;
+    float loc_k_width = k_width->get();
 
-        //create local parameters needed from header file
-        float loc_thresh = thresh->get();
-        float loc_r = r->get();
-        float loc_atk = atk->get();
-        float loc_rels = rels->get();
-        float mix_r = (mix->get()) / 100;
-        float loc_k_width = k_width->get();
-        
-        //calculate AT and RT (in samples)
-        //note that loc_atk is in ms
-        double AT = exp(-2.2 / (0.001 * samp_rate * loc_atk));
-        double RT = exp(-2.2 / (0.001 * samp_rate * loc_rels));
-        //normal local variables
-        rms = 0; // might want to not reset this every time 
-        float curr_sample = 0;
-        float orig = 0;
-        float comp_sample = 0;
-        float G = 0;    //gain computation for scaling factor 
-        float static_g = 0;    //static gain
-        float curr_sample_RMS_dB = 0; 
-        //maybe switch order of loops and only use the max rms level from both channel as gain reduction source 
-        for (int i = 0; i < numSamples; i++) {
+    //calculate AT and RT (in samples)
+    //note that loc_atk is in ms
+    double AT = exp(-1 / (0.001 * samp_rate * loc_atk));
+    double RT = exp(-1 / (0.001 * samp_rate * loc_rels));
 
-            orig = buffer.getSample(channel, i);
-            // apply dist/od here
-            // 
-            curr_sample = applyOD_or_DIST(orig);
+    for (int i = 0; i < numSamples; i++) {
+        // do channel dependent processing
+        for (int channel = 0; channel < totalNumInputChannels; ++channel) {
+            // calculate rms lvl and apply distortion to each channel sample
+            if (channel == 0) {
+                sample_0 = buffer.getSample(channel, i);
+                sample_0p = applyOD_or_DIST(sample_0);
 
-            if(i == 0) {
-                rms = curr_sample * curr_sample;
-            }
-            else {
-                rms = ((1 - TAV) * rms) + (TAV * (curr_sample * curr_sample));
-            }
-
-            curr_sample_RMS_dB = 10.0f*log10(rms); // change to dB
-
-            if (loc_k_width == 0) {
-
-                /* Hard Knee algortihm*/
-
-                //write if statements for G = min([0, CS*(CT-X)]), (see Zolzer pg 110) note that r is compression ration in header file
-                if (curr_sample_RMS_dB <= loc_thresh) {
-                    G = 0;
+                if (i == 0) {
+                    rms_0 = sample_0p * sample_0p;
                 }
                 else {
-                    G = (1 - (1 / (loc_r))) * (loc_thresh - curr_sample_RMS_dB);     //G = CS * (CT - X)]
+                    rms_0 = ((1 - TAV) * rms_0) + (TAV * (sample_0p * sample_0p));
                 }
+            } else if (channel == 1) {
+                sample_1 = buffer.getSample(channel, i);
+                sample_1p = applyOD_or_DIST(sample_1);
 
-            }
-            else {
-                /*Soft Knee Algorithm */
-                float abs_val = fabsf(curr_sample_RMS_dB - loc_thresh);
-                if ((2 * (curr_sample_RMS_dB - loc_thresh)) < ((-1) * loc_k_width)) {
-
-                    G = 0;
-
+                if (i == 0) {
+                    rms_1 = sample_1p * sample_1p;
                 }
-                else if ((2 * abs_val) <= (loc_k_width)) {
-
-                    G = curr_sample_RMS_dB + (1 - (1 / (loc_r))) * (curr_sample_RMS_dB - loc_thresh + (loc_k_width / 2)) / (2 * loc_k_width);
-
+                else {
+                    rms_1 = ((1 - TAV) * rms_1) + (TAV * (sample_1p * sample_1p));
                 }
-                else if ((2 * (curr_sample_RMS_dB - loc_thresh)) > loc_k_width){
-
-                    G = (1 - (1 / (loc_r))) * (loc_thresh - curr_sample_RMS_dB);
-
-                }
-
-
             }
-
-            //calculate static gain 
-            static_g = pow(10.0f, (G / 20.0f));   //static_g = 10 ^ (G / 20); 
-
-            // Calculate gain reduction
-            if (static_g <= gr) {
-                gr = (AT * gr) + ((1 - AT) * static_g);
-            }
-            else {
-                gr = (RT * gr) + ((1 - RT) * static_g);
-            }
-            
-            //apply gain to sample
-            comp_sample = makeup * (curr_sample * gr);
-            // mix compressed sample back into uncompresssed sample and set sample in buffer
-            buffer.setSample(channel, i, ((mix_r * comp_sample) + ((1 - mix_r) * orig)));
-
         }
-
+        // use max rms for calculation
+        if (rms_1 > rms_0) {
+            curr_sample_RMS_dB = 10.0f * log10(rms_1); // change to dB
+        } else {
+            curr_sample_RMS_dB = 10.0f * log10(rms_0); // change to dB
+        }
+        // Determine if we have a soft or hard knee and calculate static gain
+        if (loc_k_width == 0) {
+            //Hard Knee algortihm
+            if (curr_sample_RMS_dB <= loc_thresh) {
+                G = 0;
+            } else {
+                G = (1 - (1 / (loc_r))) * (loc_thresh - curr_sample_RMS_dB);     //G = CS * (CT - X)] (see Zolzer pg 110)
+            }
+        }
+        else {
+            // Soft Knee Algorithm
+            float abs_val = fabsf(curr_sample_RMS_dB - loc_thresh);
+            if ((2 * (curr_sample_RMS_dB - loc_thresh)) < ((-1) * loc_k_width)) {
+                G = 0;
+            } else if ((2 * abs_val) <= (loc_k_width)) {
+                G = curr_sample_RMS_dB + (1 - (1 / (loc_r))) * (curr_sample_RMS_dB - loc_thresh + (loc_k_width / 2)) / (2 * loc_k_width);
+            } else if ((2 * (curr_sample_RMS_dB - loc_thresh)) > loc_k_width) {
+                G = (1 - (1 / (loc_r))) * (loc_thresh - curr_sample_RMS_dB);
+            }
+        }
+        // change back to amplitude
+        static_g = pow(10.0f, (G / 20.0f));
+        // smooth gain reduction with attack and release times
+        if (static_g <= gr) {
+            gr = (AT * gr) + ((1 - AT) * static_g);
+        }
+        else {
+            gr = (RT * gr) + ((1 - RT) * static_g);
+        }
+        // apply gain reduction to each channel
+        for (int channel = 0; channel < totalNumInputChannels; ++channel) {
+            // apply makeup gain as well
+            if (channel == 0) {
+                sample_0p = makeup * (sample_0p * gr);
+                buffer.setSample(channel, i, ((mix_r * sample_0p) + ((1 - mix_r) * sample_0)));
+            }
+            else if (channel == 1) {
+                sample_1p = makeup * (sample_1p * gr);
+                buffer.setSample(channel, i, ((mix_r * sample_1p) + ((1 - mix_r) * sample_1)));
+            }
+        }
     }
 } 
 
@@ -334,9 +336,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout _484CompressorAudioProcessor
     // threshold parameter in units of dB
     param_layout.add(std::make_unique<AudioParameterFloat>("thresh", "Threshold", NormalisableRange<float>(-60.0f, 12.0f, 0.5f, 1.0f), 0));
     // attack parameter in units of ms - lower top range to be maybe 200
-    param_layout.add(std::make_unique<AudioParameterFloat>("atk", "Attack", NormalisableRange<float>(0.50f, 500.0f, 0.05f, 1.0f), 5));
+    param_layout.add(std::make_unique<AudioParameterFloat>("atk", "Attack", NormalisableRange<float>(0.50f, 250.0f, 0.25f, 1.0f), 5));
     // release parameter in units of ms bring up bottom of range to 10 ms
-    param_layout.add(std::make_unique<AudioParameterFloat>("rels", "Release", NormalisableRange<float>(1.0f, 1000.0f, 0.05f, 1.0f), 25));
+    param_layout.add(std::make_unique<AudioParameterFloat>("rels", "Release", NormalisableRange<float>(10.0f, 1000.0f, 0.25f, 1.0f), 25));
     // x:1 ratio parameter
     param_layout.add(std::make_unique<AudioParameterFloat>("r", "Ratio", NormalisableRange<float>(1.0f, 20.0f, 0.5f, 1.0f), 2));
     // knee width param in dB
