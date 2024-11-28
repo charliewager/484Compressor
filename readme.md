@@ -61,3 +61,6 @@ This plugin was developed using algorithms and principles derived from the follo
 
 For feedback, suggestions, or issues, please reach out to charlie.wagerr@gmail.com.
 
+## Note
+
+484Compressor is built with JUCE version 8.0.3 and is currently only tested for Windows machines, if you would like to clone this and build it yourself please ensure that version 8.0.3 of JUCE is installed and a Windows machine is used in order to avoid errors.
