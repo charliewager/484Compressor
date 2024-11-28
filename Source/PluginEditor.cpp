@@ -28,7 +28,7 @@ _484CompressorAudioProcessorEditor::_484CompressorAudioProcessorEditor (_484Comp
 
     atk_knob.setLookAndFeel(&m_3dKnobLook);
     atk_knob.setTextValueSuffix("ms");
-    atk_knob.setRange(0.50, 500.0, 0.05);
+    atk_knob.setRange(0.50, 250.0, 0.25);
     addAndMakeVisible(atk_knob);
 
     // add attachment
@@ -40,7 +40,7 @@ _484CompressorAudioProcessorEditor::_484CompressorAudioProcessorEditor (_484Comp
     
     rels_knob.setLookAndFeel(&m_3dKnobLook);
     rels_knob.setTextValueSuffix("ms");
-    rels_knob.setRange(1.0, 1000.0, 0.05);
+    rels_knob.setRange(10.0, 1000.0, 0.25);
     addAndMakeVisible(rels_knob);
 
     // add attachment
@@ -100,7 +100,7 @@ _484CompressorAudioProcessorEditor::_484CompressorAudioProcessorEditor (_484Comp
 
     drive_knob.setLookAndFeel(&m_3dKnobLook);
     drive_knob.setTextValueSuffix("dB");
-    drive_knob.setRange(0.0, 24.0, 0.25);
+    drive_knob.setRange(0.0, 36.0, 0.25);
     addAndMakeVisible(drive_knob);
 
     // add attachment

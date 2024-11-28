@@ -82,6 +82,8 @@ private:
     float gr;
     float TAV = 0.075;
     float samp_rate;
+    float rms_0;
+    float rms_1;
     // maybe add private functions for envolope/level detection (RMS), static gain computing and smoothing to simplify process function
 
     //==============================================================================
