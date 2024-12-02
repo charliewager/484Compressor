@@ -10,7 +10,7 @@
 
 - **Distortion Options**:
   - **Distortion**: Hard clipping distortion.
-  - **Hybrid**: Har clipping multiplied with the input signal.
+  - **Hybrid**: Hard clipping multiplied with the input signal.
   - **Overdrive**: Transistor overdrive emulation.
   - **Full Wave Rectifier**: Applies gain and absolute value operations to the signal.
   - **Half Wave Rectifier**: Applies gain and cuts out negative parts of the signal.
@@ -36,7 +36,7 @@ To build this project yourself, do the following. Ensure that Visual Studio 2022
    - Fine-tune with **Attack** and **Release** for responsiveness.
    - Apply **Makeup Gain** to compensate for output level changes.
 3. Chose the **Distortion** mode to add additional grit and colour to the signal:
-   - Adjust drive knob to taste.
+   - Adjust the drive knob to taste.
 4. Monitor the real-time visual feedback to perfect your sound.
 5. Adjust the mix knob to achieve the desired effect depth.
 
