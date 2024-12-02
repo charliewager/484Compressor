@@ -23,7 +23,9 @@
 
 ## Installation
 
-No installation media has been created for this plugin yet, but it will be available soon
+No installation media has been created for this plugin yet, but it will be available soon.
+
+To build this project yourself, do the following. Ensure that Visual Studio 2022 is installed for C++ development. Ensure that JUCE version 8.0.3 is installed. A tutorial to setup JUCE for Windows can be found in this video: https://www.youtube.com/watch?v=Mo0Oco3Vimo&pp=ygUHI2p1Y2V2Nw%3D%3D between timestamps 22:40 – 45:49. Once this is set up simply open the 484Compressor.jucer file in the Projucer application and click "Save and open in IDE". Once the Visual Studio IDE opens set the 484Compressor_VST3 solution as the startup project and build the solution. The solution can be built by navigating to the "Build" tab and clicking "Build Solution" or using the keyboard shortcut Ctrl+Shift+B. Building this project should copy the files to the proper directory. If any errors occur with copying the files it is most likely due to the permissions of the folder, these errors can be remedied by setting the permissions as done in the video above. The VST folder, once built, can be found in the 484Compressor/Builds/VisualStudio2022/x64/Debug/VST3 location.
 
 ## How to Use
 
